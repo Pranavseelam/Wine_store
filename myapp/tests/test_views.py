@@ -67,11 +67,11 @@ def test_create_customer(api_client, db):
     assert response.data["email"] == "alice.smith@example.com"
 
 @pytest.mark.django_db
-@patch("myapp.views.fetch_shopify_products")  # ✅ Fixed mock path
+@patch("myapp.views.fetch_shopify_products")  
 @patch("myapp.views.fetch_shopify_customers")  
 @patch("myapp.views.fetch_shopify_orders")  
 def test_trigger_sync(mock_orders, mock_customers, mock_products, api_client):
-    # ✅ Mock return values to avoid API failures
+    
     mock_products.return_value = [{"id": 1, "title": "Test Product"}]
     mock_customers.return_value = [{"id": 1, "name": "Test Customer"}]
     mock_orders.return_value = [{"id": 1, "total_price": "100.00"}]
@@ -79,14 +79,14 @@ def test_trigger_sync(mock_orders, mock_customers, mock_products, api_client):
     url = reverse("trigger-sync")  
     response = api_client.post(url)
 
-    # ✅ Debugging Output
+    
     print("Response Data:", response.data)
 
-    # ✅ Ensure mock functions were called
+    
     mock_products.assert_called_once()
     mock_customers.assert_called_once()
     mock_orders.assert_called_once()
 
-    # ✅ Validate response
+    
     assert response.status_code == 200
     assert response.data["status"] == "success"
