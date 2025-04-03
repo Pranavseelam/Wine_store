@@ -1,251 +1,144 @@
-# Unified Wine & E-commerce Data API
+# Wine Store API
 
-## Overview
+This is a RESTful API for managing a wine store, built using Django and Django REST Framework. The API supports product, customer, and order management, along with Shopify data synchronization and JWT authentication.
 
-This API aggregates product, customer, and order data from Shopify and (if available) WineDirect. It provides endpoints to manage products and customers while offering analytics on the imported data. The API is built using Django and Django REST Framework (DRF) with JWT authentication.
+## Table of Contents
+- [Installation](#installation)
+- [Setup](#setup)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Authentication](#authentication)
+- [Usage](#usage)
+- [External Integrations](#external-integrations)
+- [Database](#database)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Features
+## Installation
 
-- Fetch product, customer, and order data from Shopify
-- Store and manage imported data in a MySQL or MongoDB database
-- Provide API endpoints for products and customers
-- Authentication using JWT tokens
-- Real-time metrics and analytics
-- OpenAPI documentation via Swagger and ReDoc
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Pranavseelam/Wine_store.git
+   cd Wine_store
+   ```
 
----
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
 
-## Prerequisites
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Ensure you have the following installed:
+## Setup
 
-- **Python 3.10+**
-- **Git**
-- **Django**
-- **Django REST Framework**
-- **MySQL or MongoDB (whichever you configured) {MySQL is the DB used during the devolopment}**
-- **Shopify API Credentials**
-- **Postman or cURL (for API testing)**
-- **GitHub Desktop (optional, for GUI-based git management)**
+1. Set up environment variables:
+   Create a `.env` file in the root directory and define the required variables:
+   ```ini
+   SHOPIFY_ADMIN_API_ACCESS_TOKEN=<your_shopify_api_access_token>
+   SHOPIFY_API_URL=https://your-shopify-store.myshopify.com
+   ```
 
----
+2. Apply migrations:
+   ```bash
+   python manage.py migrate
+   ```
 
-## Setup Instructions
+3. Create a superuser (optional, for admin access):
+   ```bash
+   python manage.py createsuperuser
+   ```
 
-### 1. Clone the Repository
+## Running the Application
 
-```sh
-# Clone the repository from GitHub
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-cd YOUR_REPOSITORY
-```
-
-### 2. Create a Virtual Environment & Install Dependencies
-
-```sh
-# Create a virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install required dependencies
-pip install -r requirements.txt
-```
-
-### 3. Configure Environment Variables
-
-Create a **.env** file in the project root and add your credentials:
-
-```env
-SECRET_KEY=your_django_secret_key
-DEBUG=True
-DATABASE_NAME=your_database_name
-DATABASE_USER=your_database_user
-DATABASE_PASSWORD=your_database_password
-DATABASE_HOST=localhost  # or your DB host
-DATABASE_PORT=3306  # MySQL default port
-SHOPIFY_API_KEY=your_shopify_api_key
-SHOPIFY_API_SECRET=your_shopify_api_secret
-```
-
-### 4. Apply Migrations & Create Superuser
-
-```sh
-# Apply migrations
-python manage.py migrate
-
-# Create a superuser (follow the prompts)
-python manage.py createsuperuser
-```
-
-### 5. Run the Django Development Server
-
-```sh
+Start the Django development server:
+```bash
 python manage.py runserver
 ```
 
-The server will start at `http://127.0.0.1:8000/`.
-
----
-
-## API Endpoints & Usage
-
-### **1. Authentication (JWT)**
-
-#### **Obtain Access & Refresh Token**
-
-```sh
-POST /api/token/
-```
-
-Example request:
-
-```json
-{
-  "username": "admin",
-  "password": "yourpassword"
-}
-```
-
-#### **Refresh Token**
-
-```sh
-POST /api/token/refresh/
-```
-
-### **2. Product API**
-
-#### **Retrieve All Products**
-
-```sh
-GET /api/products/
-```
-
-#### **Retrieve a Single Product**
-
-```sh
-GET /api/products/{id}/
-```
-
-#### **Create a New Product**
-
-```sh
-POST /api/products/
-```
-
-Example Payload:
-
-```json
-{
-  "name": "Red Wine",
-  "price": 50.00,
-  "stock": 100
-}
-```
-
-### **3. Customer API**
-
-#### **Retrieve All Customers**
-
-```sh
-GET /api/customers/
-```
-
-#### **Retrieve a Single Customer**
-
-```sh
-GET /api/customers/{id}/
-```
-
-#### **Create a New Customer**
-
-```sh
-POST /api/customers/
-```
-
-Example Payload:
-
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com"
-}
-```
-
-### **4. Data Synchronization API**
-
-#### **Trigger Shopify Data Fetch**
-
-```sh
-POST /api/triggersync/
-```
-
-### **5. Aggregated Metrics API**
-
-#### **Retrieve Metrics**
-
-```sh
-GET /api/metrics/
-```
-
-Example Response:
-
-```json
-{
-  "total_products": 120,
-  "total_customers": 300,
-  "total_orders": 500
-}
-```
-
----
+The API will be available at: `http://127.0.0.1:8000/api/`
 
 ## API Documentation
 
-The API is documented using **Swagger** and **ReDoc**.
+The API documentation is available via Swagger:
+- **SwaggerHub**: [WinecomAPI v2](https://app.swaggerhub.com/apis/helloworld135/winecomAPI/v2)
+- **Local Swagger UI**: `http://127.0.0.1:8000/swagger/`
+- **Local ReDoc UI**: `http://127.0.0.1:8000/redoc/`
 
-- **Swagger UI:** [`http://127.0.0.1:8000/swagger/`](http://127.0.0.1:8000/swagger/)
-- **ReDoc:** [`http://127.0.0.1:8000/redoc/`](http://127.0.0.1:8000/redoc/)
+## Authentication
 
----
+This API uses JWT authentication. Obtain a token by sending a POST request to:
+```bash
+POST /api/token/
+```
+With the body:
+```json
+{
+    "username": "yourusername",
+    "password": "yourpassword"
+}
+```
+Use the received token to authenticate requests by including it in the `Authorization` header:
+```http
+Authorization: Bearer <your_access_token>
+```
 
-## Deployment
+## Usage
 
-### **Deploying to a Cloud Server (e.g., AWS, DigitalOcean)**
+### Products
+- **List products:** `GET /api/products/`
+- **Retrieve a product:** `GET /api/products/{id}/`
+- **Create a product:** `POST /api/products/`
+- **Update a product:** `PUT /api/products/{id}/`
+- **Delete a product:** `DELETE /api/products/{id}/`
 
-1. Set up a cloud VM (Ubuntu recommended).
-2. Install dependencies (`Python`, `pip`, `Django`, `MySQL`).
-3. Clone the repository and configure `.env`.
-4. Set up **Gunicorn** and **Nginx** for production.
-5. Use **Docker** or **Docker Compose** for containerized deployment.
+### Customers
+- **List customers:** `GET /api/customers/`
+- **Retrieve a customer:** `GET /api/customers/{id}/`
+- **Create a customer:** `POST /api/customers/`
+- **Update a customer:** `PUT /api/customers/{id}/`
+- **Delete a customer:** `DELETE /api/customers/{id}/`
 
----
+### Orders
+- **List orders:** `GET /api/orders/`
+- **Retrieve an order:** `GET /api/orders/{id}/`
+- **Create an order:** `POST /api/orders/`
+- **Update an order:** `PUT /api/orders/{id}/`
+- **Delete an order:** `DELETE /api/orders/{id}/`
+
+## External Integrations
+
+This API integrates with Shopify. To trigger a data sync with Shopify, send a request to:
+```bash
+POST /api/triggersync/
+```
+
+## Database
+
+The project uses MySQL. Update your `settings.py` with the correct database credentials:
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'wine_store',
+        'USER': 'root',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+```
 
 ## Contributing
 
 1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes and commit (`git commit -m "Your message"`).
-4. Push to your fork (`git push origin feature-branch`).
-5. Open a **Pull Request**.
-
----
+2. Create a new branch.
+3. Make your changes.
+4. Submit a pull request.
 
 ## License
 
-This project is licensed under the **MIT License**.
-
----
-
-## Contact
-
-For any issues, open a GitHub **Issue** or contact `your.email@example.com`.
-
----
-
-### 🎉 Happy Coding! 🚀
-
+This project is licensed under the MIT License.
