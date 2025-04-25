@@ -1,6 +1,5 @@
 # myapp/views.py
 
-import logging
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,12 +8,24 @@ from .models import Product, Customer, Order
 from .serializers import ProductSerializer, CustomerSerializer, OrderSerializer
 from .utils import fetch_shopify_products, fetch_shopify_customers, fetch_shopify_orders
 
+import logging
+
 logger = logging.getLogger(__name__)
 
 # ViewSet for Products
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+
+        # Dynamically filter based on query parameters
+        for param, value in self.request.query_params.items():
+            if param in [field.name for field in Product._meta.fields]:  # Check if param exists in Product fields
+                queryset = queryset.filter(**{param: value})
+
+        return queryset
 
 # ViewSet for Customers
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -26,7 +37,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-@api_view(['POST','GET'])
+@api_view(['POST', 'GET'])
 def trigger_data_fetch(request):
     """Endpoint to trigger data synchronization with Shopify"""
     try:
