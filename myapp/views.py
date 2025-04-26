@@ -1,5 +1,3 @@
-# myapp/views.py
-
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -12,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# ViewSet for Products
+# ViewSet for Products with dynamic filtering via query parameters
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -22,20 +20,41 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # Dynamically filter based on query parameters
         for param, value in self.request.query_params.items():
-            if param in [field.name for field in Product._meta.fields]:  # Check if param exists in Product fields
+            if param in [field.name for field in Product._meta.fields]:
                 queryset = queryset.filter(**{param: value})
 
         return queryset
 
-# ViewSet for Customers
+
+# ViewSet for Customers with dynamic filtering via query parameters
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
-# ViewSet for Orders
+    def get_queryset(self):
+        queryset = Customer.objects.all()
+
+        for param, value in self.request.query_params.items():
+            if param in [field.name for field in Customer._meta.fields]:
+                queryset = queryset.filter(**{param: value})
+
+        return queryset
+
+
+# ViewSet for Orders with dynamic filtering via query parameters
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        queryset = Order.objects.all()
+
+        for param, value in self.request.query_params.items():
+            if param in [field.name for field in Order._meta.fields]:
+                queryset = queryset.filter(**{param: value})
+
+        return queryset
+
 
 @api_view(['POST', 'GET'])
 def trigger_data_fetch(request):
@@ -51,6 +70,7 @@ def trigger_data_fetch(request):
         logger.error(f"Error in data fetch: {str(e)}")
         return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 def aggregated_metrics(request):
     """Endpoint for aggregated metrics"""
@@ -60,11 +80,11 @@ def aggregated_metrics(request):
         'total_orders': Order.objects.count(),
         'platform_distribution': {
             'shopify_products': Product.objects.filter(source_platform='Shopify').count(),
-            'winedirect_customer': Product.objects.filter(source_platform='WinDirect').count(), #if WineDirect API Access Provided
+            'winedirect_customer': Product.objects.filter(source_platform='WinDirect').count(),
             'shopify_customers': Customer.objects.filter(source_platform='Shopify').count(),
-            'winedirect_customers': Customer.objects.filter(source_platform='WineDirect').count(),#if WineDirect API Access Provided
+            'winedirect_customers': Customer.objects.filter(source_platform='WineDirect').count(),
             'shopify_orders': Order.objects.filter(source_platform='Shopify').count(),
-            'winedirect_orders': Order.objects.filter(source_platform='WineDirect').count()#if WineDirect API Access Provided
+            'winedirect_orders': Order.objects.filter(source_platform='WineDirect').count()
         }
     }
     return Response(metrics, status=status.HTTP_200_OK)
